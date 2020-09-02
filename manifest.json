@@ -1,0 +1,49 @@
+{
+    "name": "VFG Parser",
+    "version": "0.0.1",
+    "manifest_version": 2,
+    "description": "VFG Parser.",
+    "homepage_url": "https://fb.com/kosiakMD",
+    "icons": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "browser_action": {
+      "default_title": "VFG Parser",
+      "default_popup": "popup.html"
+    },
+    "default_locale": "en",
+    "background": {
+      "scripts": [
+        "js/common.js", "js/background.js"
+      ],
+      "persistent": true
+    },
+    "permissions": [
+      "storage",
+      "https://row1.vfsglobal.com/GlobalAppointment/Home/SelectVAC",
+      "https://api.telegram.org/*"
+    ],
+    "content_security_policy": "script-src 'self' https://api.telegram.org/*; object-src 'self'",
+    "content_scripts": [
+      {
+        "matches": [
+          "https://row1.vfsglobal.com/GlobalAppointment/Home/SelectVAC"
+        ],
+        "run_at": "document_idle",
+        "js": [
+          "js/common.js", "js/jquery.js", "js/content.js"
+        ]
+      },
+      {
+        "matches": [
+          "https://row1.vfsglobal.com/GlobalAppointment/Home/*"
+        ],
+        "js": [
+          "js/jquery.js", "js/test.js"
+        ]
+      }
+    ]
+  }
+

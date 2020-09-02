@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<section id="root">
+    <h1>VFG Parser</h1>
+
+    <form>
+        <label for="workStatus" class="row jc-sb">On/Off
+            <input id="workStatus" type="checkbox" checked/>
+        </label>
+
+        <div class="marg-v">
+            <label for="interval" class="marg-v row jc-sb ai-c">Interval (sec)
+                <input id="interval" type="number" pattern="[0-9]{3}" class="interval" value="60"/>
+            </label>
+
+        </div>
+
+        <button type="submit" id="setIntervalBtn">Save</button>
+    </form>
+</section>
+<script src="js/common.js"></script>
+<script src="js/popup.js"></script>
+</body>
+</html>

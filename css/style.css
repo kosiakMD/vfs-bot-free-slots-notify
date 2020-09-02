@@ -1,0 +1,54 @@
+* {
+    display: flex;
+    flex-direction: column;
+    /*align-items: center;*/
+    /*justify-content: center;*/
+}
+
+body {
+    width: 130px
+}
+
+label, label:hover {
+    cursor: pointer;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.jc-sb {
+    justify-content: space-between;
+}
+
+.jc-c {
+    justify-content: center;
+}
+
+.ai-c {
+    align-items: center;
+}
+
+#root {
+
+}
+
+#root > h1 {
+    align-self: center;
+}
+
+.marg {
+    margin: 5px;
+}
+.marg-v {
+    margin: 5px 0;
+}
+
+.interval {
+    width: 40px;
+    height: 20px;
+}
+
+#setIntervalBtn {
+    margin: auto;
+}
