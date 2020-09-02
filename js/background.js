@@ -1,4 +1,6 @@
-console.log('____Background VFG parser');
+var log = console.log.bind(this, '____bg');
+log('____Background VFG parser');
+
 
 async function postData(url = '', data) {
   // Default options are marked with *
@@ -17,12 +19,12 @@ async function postData(url = '', data) {
       body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
     if (response.error) {
-      console.log(response.error);
+      log(response.error);
       console.error(response.error);
     }
     return response.json(); // parses JSON response into native JavaScript objects
   } catch (e) {
-    console.log(e);
+    log(e);
     console.error(e);
     return e;
   }
@@ -42,28 +44,109 @@ async function postBot(msg = '_') {
 
 chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {
-    if (request.type !== MessageTypeEnum.parse) return;
-    console.log('___onMessage parse', request, sender);
-    console.log(sender.tab ?
-      'from a content script:' + sender.tab.url :
-      'from the extension');
+    log('___onMessage', request.type, request, sender);
+    if (request.type === 'capture') {
 
-    sendResponse({ farewell: 'goodbye' });
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        log('tabs', tabs);
+        var tab = tabs[0];
+        if (!tab) return; // Sanity check
+        log('currTab', tab);
+        chrome.tabs.captureVisibleTab({
+          format: 'jpeg',
+        }, (stream) => {
+          log('captureVisibleTab', stream);
+          // sendResponse({ stream: stream });
 
-    if (request.status === StatusEnum.SUCCESS) {
-      postBot(request.date);
-      const creationCallback = () => console.log('creationCallback');
-      const options = {
-        type: 'basic',
-        title: 'VFG: date is available',
-        message: `Center: ${request.center}\n${request.status}`,
-        iconUrl: 'icons/icon128.png',
-        imageUrl: 'icons/icon128.png',
-      };
-      const id = request.center = 0;
-      const notify = chrome.notifications.create(id, options, creationCallback);
+          let canvas;
+          if (!canvas) {
+            canvas = document.createElement('canvas');
+            document.body.appendChild(canvas);
+          }
+          const dimensions = request.dimensions;
+          // const dimensions = {
+          //   bottom: 470,
+          //   height: 70,
+          //   left: 293,
+          //   right: 503,
+          //   top: 400,
+          //   width: 210,
+          //   x: 293,
+          //   y: 400,
+          // };
+          const ratio = window.devicePixelRatio;
+          var partialImage = new Image();
+          partialImage.src = stream;
+          partialImage.onload = function () {
+            canvas.width = dimensions.width;
+            canvas.height = dimensions.height;
+            var context = canvas.getContext('2d');
+            context.drawImage(
+              partialImage,
+              dimensions.left * ratio,
+              dimensions.top * ratio,
+              dimensions.width * ratio,
+              dimensions.height * ratio,
+              0,
+              0,
+              dimensions.width,
+              dimensions.height,
+            );
+            var croppedDataUrl = canvas.toDataURL('image/png');
+            // chrome.tabs.create({
+            //   url: croppedDataUrl,
+            //   windowId: tab.windowId,
+            // });
+          // partialImage.src = stream;
+          // sendResponse({ stream: partialImage.src });
+          sendResponse({ stream: croppedDataUrl });
+          };
 
-    } else {
-      postBot(`Center: ${request.center}\nNo data is available`);
+          // chrome.runtime.sendMessage({
+          //   type: 'capture',
+          //   stream: stream,
+          // }, function (response) {
+          //   log('response', response);
+          //   response && log('response.stream', response.stream);
+          // });
+        });
+      });
+
+      // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      //   log('tabs', tabs);
+      //   var currTab = tabs[0];
+      //   if (currTab) { // Sanity check
+      //     log('currTab', currTab);
+      //     chrome.tabCapture.capture({  }, (stream) => {
+      //       log('stream', stream);
+      //       sendResponse({ stream });
+      //     });
+      //   }
+      // });
     }
+    if (request.type === MessageTypeEnum.parse) {
+      log(sender.tab ?
+        'from a content script:' + sender.tab.url :
+        'from the extension');
+
+      sendResponse({ farewell: 'goodbye' });
+
+      if (request.status === StatusEnum.SUCCESS) {
+        postBot(request.date);
+        const creationCallback = () => log('creationCallback');
+        const options = {
+          type: 'basic',
+          title: 'VFG: date is available',
+          message: `Center: ${request.center}\n${request.status}`,
+          iconUrl: 'icons/icon128.png',
+          imageUrl: 'icons/icon128.png',
+        };
+        const id = request.center = 0;
+        const notify = chrome.notifications.create(id, options, creationCallback);
+
+      } else {
+        postBot(`Center: ${request.center}\nNo data is available`);
+      }
+    }
+    return true;
   });

@@ -76,7 +76,7 @@ for (let script of scripts) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('___onMessage status', request, sender);
-  if (request.name !== MessageTypeEnum.status) return;
+  if (request.type !== MessageTypeEnum.status) return;
   console.log(sender.tab ?
     'from a content script:' + sender.tab.url :
     'from the extension');
