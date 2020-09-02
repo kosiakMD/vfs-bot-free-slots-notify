@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener(
       const options = {
         type: 'basic',
         title: 'VFG: date is available',
-        message: request.status,
+        message: `Center: ${request.center}\n${request.status}`,
         iconUrl: 'icons/icon128.png',
         imageUrl: 'icons/icon128.png',
       };
@@ -64,6 +64,6 @@ chrome.runtime.onMessage.addListener(
       const notify = chrome.notifications.create(id, options, creationCallback);
 
     } else {
-      postBot('No data is available');
+      postBot(`Center: ${request.center}\nNo data is available`);
     }
   });

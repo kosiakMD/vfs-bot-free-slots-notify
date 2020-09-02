@@ -71,12 +71,12 @@ scripts = document.head.querySelectorAll('script')
 console.log('___', scripts);
 for (let script of scripts) {
   console.log(script)
-  document.head.removeChild(script)
+  // document.head.removeChild(script)
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.name !== MessageTypeEnum.status) return;
   console.log('___onMessage status', request, sender);
+  if (request.name !== MessageTypeEnum.status) return;
   console.log(sender.tab ?
     'from a content script:' + sender.tab.url :
     'from the extension');
