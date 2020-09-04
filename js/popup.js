@@ -1,3 +1,5 @@
+this.log = console.log.bind(this, '____Popup');
+
 function formField(name) {
   return `${AppName}_${name}`;
 }
@@ -21,17 +23,39 @@ const saveStatus = () => storage.set(
   },
 );
 
+const saveEmail = () => storage.set(
+  { [emailField]: document.getElementById(emailField).checked },
+  () => {
+    success(emailField);
+  },
+);
+
+const savePassword = () => storage.set(
+  { [passwordField]: document.getElementById(passwordField).checked },
+  () => {
+    success(passwordField);
+  },
+);
+
 const saveAll = () => {
   const interval = document.getElementById(intervalField).value;
+  log('interval', interval);
   const workStatus = document.getElementById(workStatusField).checked;
+  log('workStatus', workStatus);
+  const email = document.getElementById(emailField).value;
+  log('email', email);
+  const password = document.getElementById(passwordField).value;
+  log('password', password);
 
   storage.set(
     {
       [intervalField]: interval,
       [workStatusField]: workStatus,
+      [emailField]: email,
+      [passwordField]: password,
     },
     () => {
-      success(intervalField, workStatusField);
+      success(intervalField, workStatusField, emailField, passwordField);
     },
   );
 
@@ -63,10 +87,12 @@ const saveAll = () => {
 // $(() => {
 window.onload = () => {
 
-  storage.get([intervalField, workStatusField], (result) => {
+  storage.get([intervalField, workStatusField, emailField, passwordField], (result) => {
     console.log(result);
     const interval = result[intervalField];
     const workStatus = result[workStatusField];
+    const email = result[emailField];
+    const password = result[passwordField];
 
     if (interval) {
       console.log('interval', interval);
@@ -79,6 +105,18 @@ window.onload = () => {
       document.getElementById(workStatusField).checked = workStatus;
     } else {
       saveStatus();
+    }
+    if (email !== undefined) {
+      console.log('email', email);
+      document.getElementById(emailField).value = email || '';
+    } else {
+      saveEmail();
+    }
+    if (password !== undefined) {
+      console.log('password', password);
+      document.getElementById(passwordField).value = password || '';
+    } else {
+      savePassword();
     }
   });
 

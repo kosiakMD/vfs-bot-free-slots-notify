@@ -1,3 +1,5 @@
+this.log = console.log.bind(this, '____content');
+
 function getText_0() {
   return $('.price-break-down-audit-layer-NoData > table tr:nth-child(2) > td > label').text();
 }
@@ -64,13 +66,45 @@ function stop() {
   clearTimeout(timer);
 }
 
-document.addEventListener('DOMContentLoaded', start);
-$(start)();
+document.addEventListener('DOMContentLoaded', () => {
+  log('DOMContentLoaded');
+  start();
+});
+$(() => {
+  log('$(() => {})()');
+  setTimeout(() => {
+    $LocationId = $('#LocationId');
+    $VisaCategoryId = $('#VisaCategoryId');
+    if ($VisaCategoryId.val() && $VisaCategoryId.val() != 0) {
+      log('$VisaCategoryId', $VisaCategoryId, $VisaCategoryId.val());
+      log('$LocationId', $LocationId, $LocationId.val());
+      start();
+    } else {
+      log('Select Center');
+      const kyiv = 5508;
+      const lviv = 5507;
+      const e90 = 2841;
+      const pCollection = 4347;
 
-scripts = document.head.querySelectorAll('script')
+      document.querySelector('#VisaCategoryId').addEventListener('DOMNodeInserted', () => {
+        //   log('DOMNodeInserted');
+        $('#VisaCategoryId').val(e90);
+        document.querySelector('#VisaCategoryId').dispatchEvent(new Event('change', {bubbles: true}));
+      });
+
+
+      $('#LocationId').val(kyiv);
+      document.querySelector('#LocationId').dispatchEvent(new Event('change', {bubbles: true}));
+
+
+    }
+  }, 1000);
+})();
+
+scripts = document.head.querySelectorAll('script');
 console.log('___', scripts);
 for (let script of scripts) {
-  console.log(script)
+  console.log(script);
   // document.head.removeChild(script)
 }
 
@@ -87,4 +121,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (timer) stop();
   }
 
-})
+});

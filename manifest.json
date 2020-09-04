@@ -29,24 +29,38 @@
     "*://row1.vfsglobal.com/*",
     "<all_urls>",
     "https://row1.vfsglobal.com/GlobalAppointment",
+    "https://row1.vfsglobal.com/GlobalAppointment/*",
     "https://api.telegram.org/*"
   ],
   "content_security_policy": "script-src 'self' https://api.telegram.org/*; object-src 'self'",
   "content_scripts": [
     {
       "matches": [
-        "*://row1.vfsglobal.com/GlobalAppointment"
+        "*://row1.vfsglobal.com/GlobalAppointment",
+        "*://row1.vfsglobal.com/GlobalAppointment/",
+        "*://row1.vfsglobal.com/GlobalAppointment/?q*"
       ],
       "run_at": "document_idle",
       "js": [
         "js/test.js",
-        "js/html2canvas.min.js",
+        "js/common.js",
         "js/login.js"
+      ]
+    },{
+      "matches": [
+        "*://row1.vfsglobal.com/GlobalAppointment/Home/Index"
+      ],
+      "run_at": "document_idle",
+      "js": [
+        "js/test.js",
+        "js/common.js",
+        "js/openTabs.js"
       ]
     },
     {
       "matches": [
-        "*://row1.vfsglobal.com/GlobalAppointment/Home/SelectVAC"
+        "*://row1.vfsglobal.com/GlobalAppointment/Home/SelectVAC",
+        "*://row1.vfsglobal.com/GlobalAppointment/Home/SelectVAC?q=*"
       ],
       "run_at": "document_idle",
       "js": [
