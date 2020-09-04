@@ -197,12 +197,24 @@ chrome.runtime.onMessage.addListener(
     //   sendResponse({ farewell: 'success' });
     // }
 
-    if (request.type === MessageTypeEnum.closeOpenTab) {
+    if (request.type === MessageTypeEnum.loggedIn) {
       log('close OpenTab', request, sender);
       sendResponse({
         farewell: 'closing',
       });
       setTimeout(() => chrome.tabs.remove(sender.tab.id), 5e3);
+      storage.get([emailField], (result) => {
+        const email = result[emailField];
+        postBot(`Login Success!\nEmail: ${email}`);
+      });
+    }
+
+    if (request.type === MessageTypeEnum.loginError) {
+      storage.get([emailField], (result) => {
+        const email = result[emailField];
+        postBot(`Login Error:\n${request.error}\nEmail: ${email}`);
+        sendResponse({farewell: 'send'})
+      });
     }
 
     if (request.type === MessageTypeEnum.parse) {

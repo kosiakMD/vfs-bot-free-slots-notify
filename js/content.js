@@ -72,6 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 $(() => {
   log('$(() => {})()');
+
+  storage.get([workStatusField], (result) => {
+    const workStatus = result[workStatusField];
+    console.warn(`Bot is Turned-${workStatus ? 'ON' : 'OFF'}`);
+    // Bot is Turned OFF
+    if (!workStatus) return;
+  })
+
   setTimeout(() => {
     $LocationId = $('#LocationId');
     $VisaCategoryId = $('#VisaCategoryId');

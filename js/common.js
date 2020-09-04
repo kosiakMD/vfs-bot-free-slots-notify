@@ -21,5 +21,6 @@ const MessageTypeEnum = {
   status: 'status',
   parse: 'parse',
   openNew: 'openNew',
-  closeOpenTab: 'closeOpenTab',
+  loggedIn: 'loggedIn',
+  loginError: 'loginError',
 };

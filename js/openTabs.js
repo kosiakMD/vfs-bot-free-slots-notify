@@ -1,7 +1,7 @@
 this.log = console.log.bind(this, '____openTabs');
 
 chrome.runtime.sendMessage({
-  type: MessageTypeEnum.closeOpenTab,
+  type: MessageTypeEnum.loggedIn,
 }, (response) => {
   if (response) console.log('farewell', response.farewell);
 });

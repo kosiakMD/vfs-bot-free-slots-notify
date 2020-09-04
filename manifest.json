@@ -38,7 +38,7 @@
       "matches": [
         "*://row1.vfsglobal.com/GlobalAppointment",
         "*://row1.vfsglobal.com/GlobalAppointment/",
-        "*://row1.vfsglobal.com/GlobalAppointment/?q*"
+        "*://row1.vfsglobal.com/GlobalAppointment/?*"
       ],
       "run_at": "document_idle",
       "js": [
