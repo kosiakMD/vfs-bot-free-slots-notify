@@ -2,6 +2,13 @@ const AppName = 'VFGParser';
 
 console.log('____Starting', AppName);
 
+class LoginError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "LoginError"; // (2)
+  }
+}
+
 const sync = false;
 
 const storage = sync ? chrome.storage.sync : chrome.storage.local;
@@ -19,6 +26,7 @@ const StatusEnum = {
 
 const MessageTypeEnum = {
   status: 'status',
+  capture: 'capture',
   parse: 'parse',
   openNew: 'openNew',
   loggedIn: 'loggedIn',

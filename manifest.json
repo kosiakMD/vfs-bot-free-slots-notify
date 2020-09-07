@@ -26,6 +26,7 @@
     "activeTab",
     "tabCapture",
     "storage",
+    "notifications",
     "*://row1.vfsglobal.com/*",
     "<all_urls>",
     "https://row1.vfsglobal.com/GlobalAppointment",
@@ -36,9 +37,21 @@
   "content_scripts": [
     {
       "matches": [
+        "*://row1.vfsglobal.com/GlobalAppointment/Account/RegisteredLogin",
+        "*://row1.vfsglobal.com/GlobalAppointment/Account/RegisteredLogin?ReturnUrl=%2FGlobalAppointment%2FHome%2FSelectVAC"
+      ],"run_at": "document_idle",
+      "js": [
+        "js/test.js",
+        "js/error.js"
+      ]
+    },
+    {
+      "matches": [
         "*://row1.vfsglobal.com/GlobalAppointment",
+        "*://row1.vfsglobal.com/GlobalAppointment?*",
         "*://row1.vfsglobal.com/GlobalAppointment/",
-        "*://row1.vfsglobal.com/GlobalAppointment/?*"
+        "*://row1.vfsglobal.com/GlobalAppointment/?*",
+        "*://row1.vfsglobal.com/GlobalAppointment/Account/RegisteredLogin?*"
       ],
       "run_at": "document_idle",
       "js": [

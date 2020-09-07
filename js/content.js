@@ -1,27 +1,27 @@
 this.log = console.log.bind(this, '____content');
 
-function getText_0() {
-  return $('.price-break-down-audit-layer-NoData > table tr:nth-child(2) > td > label').text();
-}
+// function getText_0() {
+//   return $('.price-break-down-audit-layer-NoData > table tr:nth-child(2) > td > label').text();
+// }
 
-function getStatus_0() {
-  const pars = getText().split(staticString);
-  const info = pars[1];
-  console.log('info', info);
-  if (info !== noSlot) {
-    return true;
-  } else {
-    return false;
-  }
-}
+// function getStatus_0() {
+//   const pars = getText().split(staticString);
+//   const info = pars[1];
+//   console.log('info', info);
+//   if (info !== noSlot) {
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
 
 function getText() {
   return $('label#lblDate').text();
 }
 
-function getName() {
-  return $('.header-user').text().slice(0, -2);
-}
+// function getName() {
+//   return $('.header-user').text().slice(0, -2);
+// }
 
 function getCenter() {
   return $('select#LocationId option:selected').text();
@@ -46,8 +46,8 @@ function reLoad() {
 }
 
 let timer = null;
-const staticString = 'Earliest slot available on';
-const noSlot = 'No Prime slots available for this Visa Category';
+// const staticString = 'Earliest slot available on';
+// const noSlot = 'No Prime slots available for this Visa Category';
 
 function start() {
   storage.get([intervalField, workStatusField], (result) => {
@@ -66,55 +66,77 @@ function stop() {
   clearTimeout(timer);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  log('DOMContentLoaded');
-  start();
-});
-$(() => {
-  log('$(() => {})()');
+function selectCenter() {
+  const visaCategoryId = document.querySelector('#VisaCategoryId');
+  const locationId = document.querySelector('#LocationId');
+  log('visaCategoryId', visaCategoryId, visaCategoryId.value);
+  log('locationId', locationId, locationId.value);
+  if (visaCategoryId.value && visaCategoryId.value != 0) {
+    start();
+  } else {
+    log('Select Center');
+    const kyiv = 5508;
+    const lviv = 5507;
+    const e90 = 2841;
+    const passportCollection = 4347;
 
+    visaCategoryId.addEventListener('DOMNodeInserted', () => {
+      //   log('DOMNodeInserted');
+      visaCategoryId.value = e90;
+      visaCategoryId.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+
+    locationId.value = kyiv;
+    locationId.dispatchEvent(new Event('change', { bubbles: true }));
+
+  }
+}
+
+const errors = [
+  'Error while processing your application, please contact us.',
+];
+
+function errorValidation() {
+  // const errorHref = document.querySelector('.main-container h2');
+  // return !(errorHref && errors.includes(errorHref.innerText));
+  return Boolean(document.querySelector('#VisaApplicationForm'));
+}
+
+function startProcess() {
   storage.get([workStatusField], (result) => {
     const workStatus = result[workStatusField];
     console.warn(`Bot is Turned-${workStatus ? 'ON' : 'OFF'}`);
     // Bot is Turned OFF
     if (!workStatus) return;
-  })
 
-  setTimeout(() => {
-    $LocationId = $('#LocationId');
-    $VisaCategoryId = $('#VisaCategoryId');
-    if ($VisaCategoryId.val() && $VisaCategoryId.val() != 0) {
-      log('$VisaCategoryId', $VisaCategoryId, $VisaCategoryId.val());
-      log('$LocationId', $LocationId, $LocationId.val());
-      start();
+    if (errorValidation()) {
+      setTimeout(selectCenter, 500);
     } else {
-      log('Select Center');
-      const kyiv = 5508;
-      const lviv = 5507;
-      const e90 = 2841;
-      const pCollection = 4347;
-
-      document.querySelector('#VisaCategoryId').addEventListener('DOMNodeInserted', () => {
-        //   log('DOMNodeInserted');
-        $('#VisaCategoryId').val(e90);
-        document.querySelector('#VisaCategoryId').dispatchEvent(new Event('change', {bubbles: true}));
-      });
-
-
-      $('#LocationId').val(kyiv);
-      document.querySelector('#LocationId').dispatchEvent(new Event('change', {bubbles: true}));
-
-
+      window.location.search = '';
+      window.location.pathname = '/GlobalAppointment';
     }
-  }, 1000);
+
+  });
+}
+
+// document.addEventListener('DOMContentLoaded', () => {
+//   log('DOMContentLoaded');
+//   start();
+// });
+
+$(() => {
+  log('$(() => {})()');
+
+  startProcess();
 })();
 
-scripts = document.head.querySelectorAll('script');
-console.log('___', scripts);
-for (let script of scripts) {
-  console.log(script);
-  // document.head.removeChild(script)
-}
+// scripts = document.head.querySelectorAll('script');
+// console.log('___', scripts);
+// for (let script of scripts) {
+//   console.log(script);
+//   // document.head.removeChild(script)
+// }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('___onMessage status', request, sender);

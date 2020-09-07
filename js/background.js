@@ -1,6 +1,14 @@
 this.log = console.log.bind(this, '____bg');
-log('____Background VFG parser');
+this.error = console.error.bind(this, '____bg');
+this.postError = (e, dataArray) => {
+  storage.get([emailField], (result) => {
+    const email = result[emailField];
+    const data = (dataArray && dataArray.length) ? `\n${args.join('\n')}` : '';
+    postLogBot(`❌ Error!\nEmail: ${email}\n${e}${data}`);
+  });
+};
 
+log('____Background VFG parser');
 
 async function postData(url = '', data, options) {
   // Default options are marked with *
@@ -31,216 +39,199 @@ async function postData(url = '', data, options) {
   }
 }
 
-const telegram_bot_id = 'bot357889888:AAGIW1gbGthb2GUakr4WdeHaagauaimOEXc';
-const chat_id = '-273523250';
+const telegramBotID = 'bot357889888:AAGIW1gbGthb2GUakr4WdeHaagauaimOEXc';
+const logChatID = '-273523250';
+const successChatID = '-489049348';
 
-async function postBot(msg = '_') {
-  const url = 'https://api.telegram.org/' + telegram_bot_id + '/sendMessage';
+function postBot(chatID, msg = '_') {
+  const url = `https://api.telegram.org/${telegramBotID}/sendMessage`;
   const data = {
-    'chat_id': chat_id,
+    'chat_id': chatID,
     'text': msg,
   };
-  return await postData(url, data);
+  return postData(url, data);
+}
+
+function postLogBot(msg = '_') {
+  return postBot(logChatID, msg);
+}
+
+function postSuccessBot(msg = '_') {
+  return postBot(successChatID, msg);
+}
+
+function recognizeCaptcha(imageBase64) {
+  const apikey = 'AIzaSyC_AIWfdTYKONJFnBcViBPv4Z__8ZRUxnM';
+  const visionURL = 'https://vision.googleapis.com/v1/images:annotate?key=' + apikey;
+  const image = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+  return postData(visionURL, {
+      requests: [
+        {
+          image: {
+            content: image,
+          },
+          features: [
+            {
+              type: 'TEXT_DETECTION',
+              maxResults: 1,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    });
+}
+
+function handleCaptchaText(dimensions, sendResponse) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    log('tabs', tabs);
+    const tab = tabs[0];
+    if (!tab) return; // Sanity check
+    log('currTab', tab);
+    chrome.tabs.captureVisibleTab({
+      format: 'jpeg',
+    }, (stream) => {
+      // log('captureVisibleTab', stream);
+      // sendResponse({ stream: stream });
+
+      let canvas;
+      // let offscreen;
+      if (!canvas) {
+        canvas = document.createElement('canvas');
+        // document.body.appendChild(canvas);
+      }
+      log('canvas', canvas /*croppedDataUrl*/);
+
+
+      // offscreen = canvas.transferControlToOffscreen();
+      // log('offscreen', offscreen /*croppedDataUrl*/);
+
+      const ratio = window.devicePixelRatio;
+      const partialImage = new Image();
+      let context;
+      partialImage.src = stream;
+      partialImage.onload = async function () {
+        canvas.width = dimensions.width;
+        canvas.height = dimensions.height;
+        // offscreen.width = dimensions.width;
+        // offscreen.height = dimensions.height;
+        context = canvas.getContext('2d');
+        // context = offscreen.getContext('2d');
+        context.drawImage(
+          partialImage,
+          dimensions.left * ratio,
+          dimensions.top * ratio,
+          dimensions.width * ratio,
+          dimensions.height * ratio,
+          0,
+          0,
+          dimensions.width,
+          dimensions.height,
+        );
+        const croppedDataUrl = canvas.toDataURL('image/png');
+        try {
+          const result = await recognizeCaptcha(croppedDataUrl);
+          log('result', result);
+          if (result.error) {
+            postError(result.error);
+            return error('result', result.error.message);
+          }
+
+          // log(JSON.stringify(result));
+          let captchaText = '';
+          try {
+            const text = result.responses[0].fullTextAnnotation.text;
+            captchaText = text.trim().replace(/\ /g, '');
+          } catch (e) {
+            error(e);
+            log(result);
+            postError(e, [JSON.stringify(result)]);
+          }
+
+          // log('croppedDataUrl', croppedDataUrl);
+          log('captchaText', captchaText);
+          sendResponse({ stream: croppedDataUrl, captchaText });
+        } catch (e) {
+          console.error(e);
+          postError(e);
+        }
+
+      };
+
+    });
+  });
 }
 
 chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {
     log('___onMessage', request.type, request, sender);
-    if (request.type === 'capture') {
 
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        log('tabs', tabs);
-        var tab = tabs[0];
-        if (!tab) return; // Sanity check
-        log('currTab', tab);
-        chrome.tabs.captureVisibleTab({
-          format: 'jpeg',
-        }, (stream) => {
-          // log('captureVisibleTab', stream);
-          // sendResponse({ stream: stream });
+    const type = request.type;
+    const tabId = sender.tab.id;
 
-          let canvas;
-          let offscreen;
-          if (!canvas) {
-            canvas = document.createElement('canvas');
-            // document.body.appendChild(canvas);
-          }
-          log('canvas', canvas /*croppedDataUrl*/);
+    switch (type) {
+      case MessageTypeEnum.capture: {
+        const dimensions = request.dimensions;
+        chrome.tabs.update(tabId, { highlighted: true });
+        handleCaptchaText(dimensions, sendResponse);
+        break;
+      }
 
-
-          // offscreen = canvas.transferControlToOffscreen();
-          log('offscreen', offscreen /*croppedDataUrl*/);
-
-          const dimensions = request.dimensions;
-          const ratio = window.devicePixelRatio;
-          var partialImage = new Image();
-          let context;
-          partialImage.src = stream;
-          partialImage.onload = function () {
-            canvas.width = dimensions.width;
-            canvas.height = dimensions.height;
-            // offscreen.width = dimensions.width;
-            // offscreen.height = dimensions.height;
-            context = canvas.getContext('2d');
-            // context = offscreen.getContext('2d');
-            context.drawImage(
-              partialImage,
-              dimensions.left * ratio,
-              dimensions.top * ratio,
-              dimensions.width * ratio,
-              dimensions.height * ratio,
-              0,
-              0,
-              dimensions.width,
-              dimensions.height,
-            );
-            var croppedDataUrl = canvas.toDataURL('image/png');
-            // chrome.tabs.create({
-            //   url: croppedDataUrl,
-            //   windowId: tab.windowId,
-            // });
-            // partialImage.src = stream;
-            // sendResponse({ stream: partialImage.src });
-
-            const apikey = 'AIzaSyC_AIWfdTYKONJFnBcViBPv4Z__8ZRUxnM';
-            const visionURL = 'https://vision.googleapis.com/v1/images:annotate?key=' + apikey;
-            // const bitMap = offscreen.transferToImageBitmap();
-            // offscreen.transferToImageBitmap((blob) => {
-            const image = croppedDataUrl.replace(/^data:image\/\w+;base64,/, '');
-            // log('croppedDataUrl', croppedDataUrl)
-            // log('image', image)
-            (async () => {
-              try {
-                const result = await postData(visionURL, {
-                    requests: [
-                      {
-                        image: {
-                          content: image,
-                          // content: croppedDataUrl,
-                          // content: canvas.toBlob(),
-                          // content: offscreen.convertToBlob(),
-                          // content: offscreen.transferToImageBitmap(),
-                          // content: blob,
-                          // content: bitMap,
-                        },
-                        features: [
-                          {
-                            type: 'TEXT_DETECTION',
-                            maxResults: 1,
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    headers: {
-                      'Content-Type': 'application/json; charset=utf-8',
-                    },
-                  });
-                // log('result', result);
-                console.log('result', result);
-                if (result.error) {
-                  return console.error('result', result.error.message);
-                }
-
-                const text = result.responses[0].fullTextAnnotation.text;
-                const captchaText = text.trim().replace(/\ /g, '');
-
-                try {
-                  (() => {
-                    log('commit');
-                    // context.commit();
-                    // canvas.getContext('2d').transferFromImageBitmap(bitMap);
-                    // var croppedDataUrl = canvas.toDataURL('image/jpeg', 1.0);
-                    log('croppedDataUrl', true /*croppedDataUrl*/);
-                    sendResponse({ stream: croppedDataUrl, captchaText });
-                  })();
-                } catch (e) {
-                  console.error(e);
-                }
-              } catch (e) {
-                console.error(e);
-              }
-            })();
-
-
-          };
-
-          // chrome.runtime.sendMessage({
-          //   type: 'capture',
-          //   stream: stream,
-          // }, function (response) {
-          //   log('response', response);
-          //   response && log('response.stream', response.stream);
-          // });
+      case MessageTypeEnum.loggedIn: {
+        log('close OpenTab', request, sender);
+        sendResponse({
+          farewell: 'closing',
         });
-      });
+        setTimeout(() => chrome.tabs.remove(tabId), 5e3);
+        storage.get([emailField], (result) => {
+          const email = result[emailField];
+          postLogBot(`✅ Login Success!\nEmail: ${email}`);
+        });
+        break;
+      }
 
-      // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      //   log('tabs', tabs);
-      //   var currTab = tabs[0];
-      //   if (currTab) { // Sanity check
-      //     log('currTab', currTab);
-      //     chrome.tabCapture.capture({  }, (stream) => {
-      //       log('stream', stream);
-      //       sendResponse({ stream });
-      //     });
-      //   }
-      // });
-    }
-    // if (request.type === MessageTypeEnum.openNew) {
-    //   const url = 'https://row1.vfsglobal.com/GlobalAppointment/Home/SelectVAC?q=dePiaPfL2MJ7yDPEmQRU6fRZbx3aIpSal6PdG3Bxqq7rSNU6HabciCVot9dEwkhd';
-    //
-    //   chrome.tabs.create({ url: url }, (tab1) => {
-    //     console.log('tab1', tab1);
-    //   });
-    //   sendResponse({ farewell: 'success' });
-    // }
 
-    if (request.type === MessageTypeEnum.loggedIn) {
-      log('close OpenTab', request, sender);
-      sendResponse({
-        farewell: 'closing',
-      });
-      setTimeout(() => chrome.tabs.remove(sender.tab.id), 5e3);
-      storage.get([emailField], (result) => {
-        const email = result[emailField];
-        postBot(`Login Success!\nEmail: ${email}`);
-      });
-    }
+      case MessageTypeEnum.loginError: {
+        postError(new LoginError(request.error));
+        break;
+      }
 
-    if (request.type === MessageTypeEnum.loginError) {
-      storage.get([emailField], (result) => {
-        const email = result[emailField];
-        postBot(`Login Error:\n${request.error}\nEmail: ${email}`);
-        sendResponse({farewell: 'send'})
-      });
-    }
+      case MessageTypeEnum.parse: {
+        log(sender.tab ?
+          'from a content script:' + sender.tab.url :
+          'from the extension');
 
-    if (request.type === MessageTypeEnum.parse) {
-      log(sender.tab ?
-        'from a content script:' + sender.tab.url :
-        'from the extension');
+        sendResponse({ farewell: 'goodbye' });
 
-      sendResponse({ farewell: 'goodbye' });
+        if (request.status === StatusEnum.SUCCESS) {
+          postSuccessBot(`🛂 Center: ${request.center}\n🗓 Date: ${request.date}`);
+          postLogBot(`🛂 Center: ${request.center}\n🗓 Date: ${request.date}`);
+          const creationCallback = (id) => {
+            log('creationCallback', id);
+            chrome.notifications.clear(id);
+          }
+          const options = {
+            type: 'basic',
+            title: 'VFG: date is available',
+            message: `Center: ${request.center}\n${request.status}`,
+            iconUrl: 'icons/icon128.png',
+            imageUrl: 'icons/icon128.png',
+          };
+          const id = request.center || '0';
+          const notify = chrome.notifications.create(id, options, creationCallback);
+          log('notify', notify);
 
-      if (request.status === StatusEnum.SUCCESS) {
-        postBot(`Center: ${request.center}\nDate: ${request.date}`);
-        const creationCallback = () => log('creationCallback');
-        const options = {
-          type: 'basic',
-          title: 'VFG: date is available',
-          message: `Center: ${request.center}\n${request.status}`,
-          iconUrl: 'icons/icon128.png',
-          imageUrl: 'icons/icon128.png',
-        };
-        const id = request.center = 0;
-        const notify = chrome.notifications.create(id, options, creationCallback);
-
-      } else {
-        // postBot(`Center: ${request.center}\nNo data is available`);
+        } else {
+          postLogBot(`🛂 Center: ${request.center}\n⭕️ No data is available`);
+        }
+        break;
       }
     }
-    return true;
+
+    return true; // for async response
   },
 );
