@@ -121,8 +121,33 @@ window.onload = () => {
   });
 
   document.getElementById('setIntervalBtn').addEventListener('click', (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     saveAll();
+  });
+
+  const $centers = $('#centers');
+  $centers.append(() => {
+    const children = [];
+    for (let centerName in Centers) {
+      const center = Centers[centerName];
+      log(centerName, center);
+      const { value, label } = center;
+      const $el = $(
+        `<label for="${value}" class="row jc-sb">${label}
+            <input id="${value}" name="${value}" type="checkbox" />
+         </label>`,
+      );
+      children.push($el);
+    }
+    return children;
+  });
+
+  log('submit form id', document.getElementById('form'));
+  document.getElementById('form').addEventListener('submit', (e, a1, a2) => {
+    log('submiting');
+    e.preventDefault();
+    log(e, a1, a2);
+    log('.serialize()', $('#form').serialize(), $('#form').serializeArray())
   });
 
 };

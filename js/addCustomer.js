@@ -26,11 +26,11 @@
 // })
 
 
-date = document.querySelector('.fc-day[style*="background-color: rgb(188, 237, 145)"]')
-overlays = document.querySelectorAll('.fc-cell-overlay')
-overlay.style.display = ''
-
-.dispatchEvent(new Event('mousedown', { bubbles: true }));
-.dispatchEvent(new Event('mouseup', { bubbles: true }));
-.dispatchEvent(new Event('click', { bubbles: true }));
+// date = document.querySelector('.fc-day[style*="background-color: rgb(188, 237, 145)"]')
+// overlays = document.querySelectorAll('.fc-cell-overlay')
+// overlay.style.display = ''
+//
+// .dispatchEvent(new Event('mousedown', { bubbles: true }));
+// .dispatchEvent(new Event('mouseup', { bubbles: true }));
+// .dispatchEvent(new Event('click', { bubbles: true }));
 

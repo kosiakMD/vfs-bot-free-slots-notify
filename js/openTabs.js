@@ -6,12 +6,20 @@ function click(callBack) {
   link.setAttribute('target', '_blank');
   link.click();
 
-  callBack && callBack();
+  // callBack && callBack();
 }
 
-function closeTab() {
+function loggedIn() {
   chrome.runtime.sendMessage({
     type: MessageTypeEnum.loggedIn,
+  }, (response) => {
+    if (response) console.log('farewell', response.farewell);
+  });
+}
+
+function openTabs() {
+  chrome.runtime.sendMessage({
+    type: MessageTypeEnum.openNew,
   }, (response) => {
     if (response) console.log('farewell', response.farewell);
   });
@@ -24,7 +32,9 @@ function start() {
     // Bot is Turned OFF
     if (!workStatus) return;
 
-    click(closeTab);
+    loggedIn();
+    openTabs();
+    click();
 
   });
 }

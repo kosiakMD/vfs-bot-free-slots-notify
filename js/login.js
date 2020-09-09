@@ -116,6 +116,14 @@ function errorValidation() {
   }
 }
 
+function closeAllOtherTabs() {
+  chrome.runtime.sendMessage({
+    type: MessageTypeEnum.closeAllTheRest,
+  }, function (response) {
+    log('response', response);
+  });
+}
+
 function runScript() {
   storage.get([emailField, passwordField, workStatusField], (result) => {
     const workStatus = result[workStatusField];
@@ -129,6 +137,7 @@ function runScript() {
     log('password', password);
     if (email && password) {
       if (errorValidation()) {
+        closeAllOtherTabs();
         fillAndSubmitForm(email, password);
       }
     } else {

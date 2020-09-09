@@ -8,30 +8,33 @@
 <section id="root">
     <h1>VFG Parser</h1>
 
-    <form>
+    <form id="form">
         <label for="workStatus" class="row jc-sb">On/Off
-            <input id="workStatus" type="checkbox" checked/>
+            <input id="workStatus" name="workStatus" type="checkbox" checked/>
         </label>
 
         <div class="marg-v">
-            <label for="interval" class="marg-v row jc-sb ai-c">Interval (sec)
-                <input id="interval" type="number" pattern="[0-9]{3}" class="interval" value="60"/>
+            <label for="interval" class="row jc-sb ai-c">Interval (sec)
+                <input id="interval" name="interval" type="number" pattern="[0-9]{3}" class="interval" value="60"/>
             </label>
 
         </div>
 
         <div class="marg-v">
             <label for="email" class="">Email
-                <input id="email" type="email" style="width: 100%" value=""/>
+                <input id="email" name="email" type="email" style="width: 100%" value=""/>
             </label>
             <label for="password" class="">Password
-                <input id="password" type="password" style="width: 100%" value=""/>
+                <input id="password" name="password" type="password" style="width: 100%" value=""/>
             </label>
         </div>
+
+        <div id="centers" class="marg-v"></div>
 
         <button type="submit" id="setIntervalBtn">Save</button>
     </form>
 </section>
+<script src="js/jquery.js"></script>
 <script src="js/common.js"></script>
 <script src="js/popup.js"></script>
 </body>

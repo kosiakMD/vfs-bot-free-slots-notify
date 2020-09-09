@@ -5,7 +5,7 @@ console.log('____Starting', AppName);
 class LoginError extends Error {
   constructor(message) {
     super(message); // (1)
-    this.name = "LoginError"; // (2)
+    this.name = 'LoginError'; // (2)
   }
 }
 
@@ -31,4 +31,41 @@ const MessageTypeEnum = {
   openNew: 'openNew',
   loggedIn: 'loggedIn',
   loginError: 'loginError',
+  closeAllTheRest: 'closeAllTheRest',
+};
+
+const Centers = {
+  kyiv: {
+    value: 5508,
+    label: 'Kyiv',
+  },
+  lviv: {
+    value: 5507,
+    label: 'Lviv',
+  },
+  dnipro: {
+    value: 5512,
+    label: 'Dnipro',
+  },
+  odesa: {
+    value: 5513,
+    label: 'Odesa', // ⚓
+  },
+  kharkiv: {
+    value: 5510,
+    label: 'Kharkiv',
+  },
+  ivanofranko: {
+    value: 5509,
+    label: 'Ivano-Franko',
+  },
+  uzhgorod: {
+    value: 5511,
+    label: 'Uzhgorod',
+  },
+};
+
+const reasons = {
+  e90: 2841,
+  passportCollection: 4347,
 };

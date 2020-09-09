@@ -1,16 +1,41 @@
 * {
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
     /*align-items: center;*/
     /*justify-content: center;*/
 }
 
 body {
-    width: 130px
+    width: 200px;
+    padding: 0;
+    /*padding: 0 10px;*/
 }
 
-label, label:hover {
+form {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+input {
+    padding: 5px;
+}
+
+input[type=checkbox] {
+    width: 15px;
+    height: 15px;
+}
+
+label {
     cursor: pointer;
+    vertical-align: middle;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+label:hover {
+    background-color: lightgrey;
 }
 
 .row {
@@ -45,8 +70,9 @@ label, label:hover {
 }
 
 .interval {
-    width: 40px;
-    height: 20px;
+    width: 50px;
+    /*height: 20px;*/
+    padding-right: 0;
 }
 
 #setIntervalBtn {

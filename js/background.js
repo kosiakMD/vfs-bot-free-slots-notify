@@ -10,6 +10,11 @@ this.postError = (e, dataArray) => {
 
 log('____Background VFG parser');
 
+const TrackedTabs = [];
+const checkCenters = [
+  Centers.kyiv, Centers.dnipro,
+];
+
 async function postData(url = '', data, options) {
   // Default options are marked with *
   try {
@@ -174,6 +179,18 @@ chrome.runtime.onMessage.addListener(
     const tabId = sender.tab.id;
 
     switch (type) {
+      case MessageTypeEnum.closeAllTheRest: {
+        chrome.tabs.query({ url: '*://row1.vfsglobal.com/*' }, (tabs) => {
+          log('tabs', tabs);
+          tabs.map(tab => {
+            if (tab.id !== tabId) {
+              chrome.tabs.remove(tab.id);
+            }
+          });
+        });
+        break;
+      }
+
       case MessageTypeEnum.capture: {
         const dimensions = request.dimensions;
         chrome.tabs.update(tabId, { highlighted: true });
@@ -184,13 +201,39 @@ chrome.runtime.onMessage.addListener(
       case MessageTypeEnum.loggedIn: {
         log('close OpenTab', request, sender);
         sendResponse({
-          farewell: 'closing',
+          farewell: 'opening Tabs',
+          openNew: !!checkCenters.length,
         });
-        setTimeout(() => chrome.tabs.remove(tabId), 5e3);
+        // setTimeout(() => chrome.tabs.remove(tabId), 5e3);
         storage.get([emailField], (result) => {
           const email = result[emailField];
           postLogBot(`✅ Login Success!\nEmail: ${email}`);
         });
+        break;
+      }
+
+      case MessageTypeEnum.openNew: {
+        log('openNew', request, sender);
+        chrome.tabs.query({ url: '*://row1.vfsglobal.com/*' }, (tabs) => {
+          let id;
+          const openedTabs = [];
+          const trackedTabs = [];
+          tabs.map(tab => {
+            TrackedTabs.map(trackedTab => {
+              if (tab.id !== tabId) {
+                chrome.tabs.remove(tab.id);
+              }
+            });
+          });
+          if (checkCenters.length) {
+            TrackedTabs.push({ center: checkCenters.pop(), tabId = });
+            sendResponse({
+              farewell: 'opening Tabs',
+              openNew: !!checkCenters.length,
+            });
+          }
+          // setTimeout(() => chrome.tabs.remove(tabId), 5e3);
+        }
         break;
       }
 
@@ -213,7 +256,7 @@ chrome.runtime.onMessage.addListener(
           const creationCallback = (id) => {
             log('creationCallback', id);
             chrome.notifications.clear(id);
-          }
+          };
           const options = {
             type: 'basic',
             title: 'VFG: date is available',
