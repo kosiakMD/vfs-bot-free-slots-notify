@@ -1,5 +1,10 @@
 this.log = console.log.bind(this, '____content');
 
+function sendContentError(error, errorContext) {
+  const errorClass = ContentError;
+  sendError(errorClass, error, errorContext)
+}
+
 // function getText_0() {
 //   return $('.price-break-down-audit-layer-NoData > table tr:nth-child(2) > td > label').text();
 // }
@@ -90,6 +95,14 @@ function selectCenter() {
     locationId.value = kyiv;
     locationId.dispatchEvent(new Event('change', { bubbles: true }));
 
+
+    // VisaApplicationForm
+    $('#VisaCategoryId').append('<option value="' + e90 + '">E90</option>');
+    $('#VisaCategoryId option[value="' + e90 + '"]').prop('selected', true);
+    // $('#VisaCategoryId').value(e90);
+    // $('#VisaCategoryId option:eq(1)').prop('selected', true);
+    // visaCategoryId.value = e90;
+
   }
 }
 
@@ -100,7 +113,11 @@ const errors = [
 function errorValidation() {
   // const errorHref = document.querySelector('.main-container h2');
   // return !(errorHref && errors.includes(errorHref.innerText));
-  return Boolean(document.querySelector('#VisaApplicationForm'));
+  const doesFormExist = Boolean(document.querySelector('#VisaApplicationForm'));
+  if (!doesFormExist) {
+    sendContentError('No Form at the page - Server Side Error')
+  }
+  return doesFormExist;
 }
 
 function startProcess() {

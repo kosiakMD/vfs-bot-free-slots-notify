@@ -86,12 +86,18 @@ const Errors = {
   ],
 };
 
-function sendError(error, errorType) {
-  chrome.runtime.sendMessage({
-    type: MessageTypeEnum.loginError,
-    error,
-    errorType,
-  }, (response) => log('farewell', response.farewell));
+function sendLoginError(error, errorContext) {
+  const type = MessageTypeEnum.error;
+  const ErrorClass = LoginError;
+  sendError(ErrorClass, error, errorContext);
+}
+
+function pageErrorValidation() {
+  const doesFormExist = Boolean(document.querySelector('#ApplicantListForm'));
+  if (!doesFormExist) {
+    sendLoginError('No Form at the page - Server Side Error')
+  }
+  return doesFormExist;
 }
 
 function errorValidation() {
@@ -100,11 +106,11 @@ function errorValidation() {
   if (loginError) {
     log('loginError', loginError);
     if (Errors.captcha.includes(loginError)) {
-      sendError(loginError, 'captcha');
+      sendLoginError(loginError, 'captcha');
       // runScript();
       return true;
     } else {
-      sendError(loginError, 'other');
+      sendLoginError(loginError, 'other');
       log(`Reload in ${reloadPeriodInMin} min`);
       setTimeout(() => window.location.reload(), reloadPeriodInMin * 60e3);
       return false;
@@ -131,6 +137,12 @@ function runScript() {
     // Bot is Turned OFF
     if (!workStatus) return;
 
+    if (!pageErrorValidation()) {
+      window.location.search = '';
+      window.location.pathname = '/GlobalAppointment';
+      return;
+    }
+
     const email = result[emailField];
     const password = result[passwordField];
     log('email', email);
@@ -149,7 +161,7 @@ function runScript() {
 function addFillCaptchaBtn() {
   const btn = document.createElement('button');
   btn.innerText = 'Captcha';
-  btn.style.cssText = 'position: absolute; top: 0; left: 0; z-index: 999';
+  btn.style.cssText = 'position: fixed; top: 0; left: 0; z-index: 999';
   btn.addEventListener('click', () => {
     log('fillCaptcha');
     fillCaptcha();
@@ -157,18 +169,25 @@ function addFillCaptchaBtn() {
   document.body.appendChild(btn);
 }
 
-document.onready = () => {
-  log('____onready');
-};
+// document.onready = () => {
+//   log('____onready');
+// };
 
 window.onload = () => {
   const captcha = document.getElementsByClassName('customcapcha')[0];
   log('captcha', captcha);
-  captcha.onloadeddata = () => log('____onloadeddata');
-  captcha.onload = () => log('____onload');
+  if (captcha) {
+    // captcha.onloadeddata = () => log('____onloadeddata');
+    // captcha.onload = () => log('____onload');
 
-  addFillCaptchaBtn()
-
-  runScript();
+    addFillCaptchaBtn();
+    runScript();
+  } else {
+    setTimeout(() => {
+      $('.recaptcha-checkbox-border').click();
+      $('.recaptcha-checkbox-borderAnimation').click();
+      runScript();
+    }, 3e3);
+  }
 
 };

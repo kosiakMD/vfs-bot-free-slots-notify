@@ -22,13 +22,15 @@
     "persistent": true
   },
   "permissions": [
-    "tabs",
     "activeTab",
+    "<all_urls>",
     "tabCapture",
+    "webRequest",
+    "webRequestBlocking",
+    "tabs",
     "storage",
     "notifications",
     "*://row1.vfsglobal.com/*",
-    "<all_urls>",
     "https://row1.vfsglobal.com/GlobalAppointment",
     "https://row1.vfsglobal.com/GlobalAppointment/*",
     "https://api.telegram.org/*"

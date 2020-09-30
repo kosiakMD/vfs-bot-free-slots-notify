@@ -9,6 +9,22 @@ class LoginError extends Error {
   }
 }
 
+class ContentError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = 'ContentError'; // (2)
+  }
+}
+
+function sendError(ErrorClass, error, errorContext) {
+  chrome.runtime.sendMessage({
+    type: MessageTypeEnum.error,
+    ErrorClass,
+    error,
+    errorContext,
+  }, (response) => log('farewell', response.farewell));
+}
+
 const sync = false;
 
 const storage = sync ? chrome.storage.sync : chrome.storage.local;
@@ -30,7 +46,9 @@ const MessageTypeEnum = {
   parse: 'parse',
   openNew: 'openNew',
   loggedIn: 'loggedIn',
+  error: 'error',
   loginError: 'loginError',
+  contentError: 'contentError',
   closeAllTheRest: 'closeAllTheRest',
 };
 

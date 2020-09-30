@@ -1,31 +1,43 @@
 this.log = console.log.bind(this, '____openTabs');
 
-function click(callBack) {
+function loggedIn() {
+  chrome.runtime.sendMessage({
+    type: MessageTypeEnum.loggedIn,
+  }, responseHandler);
+}
+
+function responseHandler(response) {
+  if (response) {
+    log('response', response);
+    if (response.openNew) {
+      if (response.count) {
+        for (let i = 0; i < response.count; i++) {
+          openNewTab();
+        }
+      } else {
+        openNewTab();
+      }
+    }
+  }
+}
+
+function openNewTab(callBack) {
   log('click');
   const link = document.querySelector('.leftNav-ul li a');
   link.setAttribute('target', '_blank');
   link.click();
-
+  onTabOpen();
   // callBack && callBack();
 }
 
-function loggedIn() {
-  chrome.runtime.sendMessage({
-    type: MessageTypeEnum.loggedIn,
-  }, (response) => {
-    if (response) console.log('farewell', response.farewell);
-  });
-}
-
-function openTabs() {
+function onTabOpen() {
   chrome.runtime.sendMessage({
     type: MessageTypeEnum.openNew,
-  }, (response) => {
-    if (response) console.log('farewell', response.farewell);
-  });
+  }, responseHandler);
 }
 
-function start() {
+function start(e) {
+  log('Event type:', e.type);
   storage.get([workStatusField], (result) => {
     const workStatus = result[workStatusField];
     console.warn(`Bot is Turned-${workStatus ? 'ON' : 'OFF'}`);
@@ -33,16 +45,14 @@ function start() {
     if (!workStatus) return;
 
     loggedIn();
-    openTabs();
-    click();
+    // onTabOpen();
+    // openNewTab();
 
   });
 }
 
-window.onload = () => {
-  log('onload');
-  start();
-};
+window.onload = start;
+document.addEventListener('DOMContentLoaded', start);
 
 
 // document.onready = () => {
